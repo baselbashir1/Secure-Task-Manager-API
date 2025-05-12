@@ -1,98 +1,3 @@
-//package com.task.managerapi.configurations;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.task.managerapi.models.RequestLog;
-//import com.task.managerapi.repositories.RequestLogRepository;
-//import jakarta.servlet.http.HttpServletRequest;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.slf4j.Slf4j;
-//import org.aspectj.lang.ProceedingJoinPoint;
-//import org.aspectj.lang.annotation.Around;
-//import org.aspectj.lang.annotation.Aspect;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.web.context.request.RequestContextHolder;
-//import org.springframework.web.context.request.ServletRequestAttributes;
-//
-//import java.net.InetAddress;
-//import java.net.UnknownHostException;
-//import java.util.Objects;
-//
-//@Slf4j
-//@Aspect
-//@Configuration
-//@RequiredArgsConstructor
-//public class ApplicationLoggingAspect {
-//
-//    private final ObjectMapper objectMapper;
-//    private final HttpServletRequest httpServletRequest;
-//    private final RequestLogRepository requestLogRepository;
-//
-//    @Around("execution(* com.task.managerapi.controllers..*.*(..))")
-//    public Object logMethod(ProceedingJoinPoint joinPoint) throws Throwable {
-//        Object result;
-//        RequestLog requestLog = new RequestLog();
-//
-//        String method = joinPoint.getSignature().toShortString();
-//        String endpoint = httpServletRequest.getRequestURI();
-//
-//        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-//        String IPAddress = getIPAddress(request);
-//
-//        try {
-//            result = joinPoint.proceed();
-//            String jsonBody;
-//            try {
-//                jsonBody = objectMapper.writeValueAsString(result);
-//            } catch (Exception e) {
-//                jsonBody = "Unable to serialize result to JSON: " + e.getMessage();
-//            }
-//
-//            requestLog.setMessage(jsonBody);
-//            requestLog.setEndpoint(endpoint);
-//            requestLog.setMethod(method);
-//            requestLog.setIpAddress(IPAddress);
-//            requestLog.setStatusCode(null);
-//            requestLogRepository.save(requestLog);
-//            log.info("AOP success response: {}", result);
-//        } catch (Throwable e) {
-//            requestLog.setMessage(e.getMessage());
-//            requestLog.setEndpoint(endpoint);
-//            requestLog.setMethod(method);
-//            requestLog.setIpAddress(IPAddress);
-//            requestLog.setStatusCode(null);
-//            requestLogRepository.save(requestLog);
-//            log.info("AOP error response: {}", e.getMessage());
-//            throw e;
-//        }
-//
-//        return result;
-//    }
-//
-//    public String getIPAddress(HttpServletRequest request) {
-//        String IPAddress = request.getHeader("X-Forwarded-For");
-//        if (IPAddress == null || IPAddress.isEmpty() || "unknown".equalsIgnoreCase(IPAddress)) {
-//            IPAddress = request.getHeader("X-Real-IP");
-//        }
-//        if (IPAddress == null || IPAddress.isEmpty() || "unknown".equalsIgnoreCase(IPAddress)) {
-//            IPAddress = request.getRemoteAddr();
-//        }
-//
-//        if (IPAddress != null && IPAddress.contains(",")) {
-//            IPAddress = IPAddress.split(",")[0].trim();
-//        }
-//
-//        if ("127.0.0.1".equals(IPAddress) || "localhost".equalsIgnoreCase(IPAddress)) {
-//            try {
-//                InetAddress localHost = InetAddress.getLocalHost();
-//                IPAddress = localHost.getHostAddress();
-//            } catch (UnknownHostException e) {
-//                IPAddress = "Unknown";
-//            }
-//        }
-//        return IPAddress;
-//    }
-//}
-
 package com.task.managerapi.configurations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,6 +10,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -176,6 +83,10 @@ public class ApplicationLoggingAspect {
     private int getStatusCodeFromException(Throwable e) {
         if (e instanceof ResponseStatusException) {
             return ((ResponseStatusException) e).getStatusCode().value();
+        } else if (e instanceof AccessDeniedException) {
+            return 403;
+        } else if (e instanceof AuthenticationException) {
+            return 401;
         }
         return 500;
     }

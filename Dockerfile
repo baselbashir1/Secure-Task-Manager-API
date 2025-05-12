@@ -1,5 +1,5 @@
 FROM openjdk:22-jdk-slim
 
-COPY target/Task.war /task.war
+COPY target/Task_Manager.war /task-anager.war
 
-CMD ["java", "-jar", "/task.war"]
+CMD ["java", "-jar", "/task-anager"]
