@@ -1,4 +1,4 @@
-package com.task.managerapi.controller;
+package com.task.managerapi.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

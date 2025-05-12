@@ -1,6 +1,6 @@
-package com.task.managerapi.config;
+package com.task.managerapi.configurations;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,10 +13,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtConverter jwtConverter;
+    private final JwtConverter jwtConverter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(
-                        (oauth2) -> oauth2.jwt(
+                        oauth2 -> oauth2.jwt(
                                 jwt -> jwt.jwtAuthenticationConverter(jwtConverter)
                         ))
                 .sessionManagement(

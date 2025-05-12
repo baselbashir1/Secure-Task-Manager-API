@@ -2,6 +2,6 @@ package com.task.managerapi.enums;
 
 public enum TaskStatus {
     PENDING,
-    PROGRESS,
+    IN_PROGRESS,
     COMPLETED
 }
