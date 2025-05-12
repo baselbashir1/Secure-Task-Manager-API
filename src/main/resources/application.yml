@@ -36,7 +36,9 @@ jwt:
 keycloak:
   admin:
     server-url: http://localhost:9090
+    token-url: http://localhost:9090/realms/task-manager-realm/protocol/openid-connect/token
     realm: task-manager-realm
+    grant_type: password
     client-id: task-manager
     username: admin
     password: admin1
