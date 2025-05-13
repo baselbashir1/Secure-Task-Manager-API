@@ -1,13 +1,14 @@
-package com.task.managerapi.configurations;
+package com.task.managerapi.config;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class KeycloakConfig {
+public class AppConfig {
 
     @Value("${keycloak.admin.server-url}")
     private String serverUrl;
@@ -33,5 +34,10 @@ public class KeycloakConfig {
                 .username(username)
                 .password(password)
                 .build();
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

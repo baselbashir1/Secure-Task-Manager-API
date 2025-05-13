@@ -2,6 +2,7 @@ package com.task.managerapi.controllers;
 
 import com.task.managerapi.dto.requests.TaskRequest;
 import com.task.managerapi.services.TaskService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class TaskController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('role_user', 'role_admin')")
-    public ResponseEntity<?> createTask(@RequestBody TaskRequest taskRequest) {
+    public ResponseEntity<?> createTask(@Valid @RequestBody TaskRequest taskRequest) {
         taskService.createTask(taskRequest);
         return new ResponseEntity<>("Task created successfully", HttpStatus.CREATED);
     }
@@ -38,9 +39,16 @@ public class TaskController {
         return new ResponseEntity<>(taskService.getTaskById(id), HttpStatus.OK);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('role_user', 'role_admin')")
+    public ResponseEntity<?> updateTask(@PathVariable long id, @Valid @RequestBody TaskRequest taskRequest) {
+        taskService.updateTask(id, taskRequest);
+        return new ResponseEntity<>("Task updated successfully", HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('role_user', 'role_admin')")
-    public ResponseEntity<?> deleteTaskById(@PathVariable long id) {
+    public ResponseEntity<?> deleteTask(@PathVariable long id) {
         taskService.deleteTaskById(id);
         return new ResponseEntity<>("Task deleted successfully", HttpStatus.OK);
     }

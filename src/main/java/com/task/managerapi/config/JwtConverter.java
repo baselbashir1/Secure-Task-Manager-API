@@ -1,4 +1,4 @@
-package com.task.managerapi.configurations;
+package com.task.managerapi.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;

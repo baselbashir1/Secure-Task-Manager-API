@@ -5,6 +5,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class WrongCredentialsException extends RuntimeException {
+public class UnauthorizedTaskAccessException extends RuntimeException {
     private final String message;
 }

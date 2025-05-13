@@ -3,11 +3,11 @@ package com.task.managerapi.services;
 import com.task.managerapi.dto.requests.TaskRequest;
 import com.task.managerapi.dto.responses.PagedResponse;
 import com.task.managerapi.dto.responses.TaskResponse;
+import com.task.managerapi.exceptions.TaskNotFoundException;
 import com.task.managerapi.mappers.PagedMapper;
 import com.task.managerapi.mappers.TaskMapper;
 import com.task.managerapi.models.Task;
 import com.task.managerapi.repositories.TaskRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -52,12 +52,25 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskResponse getTaskById(long id) {
         Task task = taskRepository.findByIdAndOwnerId(id, getOwnerId())
-                .orElseThrow(() -> new EntityNotFoundException("Task with id " + id + " not found"));
+                .orElseThrow(() -> new TaskNotFoundException("Task with id " + id + " not found"));
 
         return taskMapper.mapToTaskResponse(task);
     }
 
     @Override
+    @Transactional
+    public void updateTask(long id, TaskRequest taskRequest) {
+        Task task = taskRepository.findByIdAndOwnerId(id, getOwnerId())
+                .orElseThrow(() -> new TaskNotFoundException("Task with id " + id + " not found"));
+
+        task.setTitle(taskRequest.title());
+        task.setDescription(taskRequest.description());
+        task.setStatus(taskRequest.status());
+        task.setDueDate(taskRequest.dueDate());
+    }
+
+    @Override
+    @Transactional
     public void deleteTaskById(long id) {
         taskRepository.deleteById(getTaskById(id).taskId());
     }

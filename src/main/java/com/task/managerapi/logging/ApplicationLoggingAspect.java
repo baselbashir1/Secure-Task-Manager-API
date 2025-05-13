@@ -1,4 +1,4 @@
-package com.task.managerapi.configurations;
+package com.task.managerapi.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task.managerapi.models.RequestLog;
@@ -13,13 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Optional;
 
 @Slf4j
 @Aspect
@@ -32,8 +32,18 @@ public class ApplicationLoggingAspect {
 
     @Around("execution(* com.task.managerapi.controllers..*.*(..))")
     public Object logMethod(ProceedingJoinPoint joinPoint) throws Throwable {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+
+        String endpoint = request.getRequestURI();
+        String methodSignature = joinPoint.getSignature().toShortString();
+        String ipAddress = getIPAddress(request);
+
         RequestLog requestLog = new RequestLog();
+        requestLog.setEndpoint(endpoint);
+        requestLog.setMethod(methodSignature);
+        requestLog.setIpAddress(ipAddress);
+
         Object result;
 
         try {
@@ -48,7 +58,6 @@ public class ApplicationLoggingAspect {
             throw e;
         } finally {
             try {
-                populateCommonFields(requestLog, request, joinPoint);
                 requestLogRepository.save(requestLog);
             } catch (Exception e) {
                 log.warn("Failed to save request log", e);
@@ -56,12 +65,6 @@ public class ApplicationLoggingAspect {
         }
 
         return result;
-    }
-
-    private void populateCommonFields(RequestLog requestLog, HttpServletRequest request, ProceedingJoinPoint joinPoint) {
-        requestLog.setEndpoint(request.getRequestURI());
-        requestLog.setMethod(joinPoint.getSignature().toShortString());
-        requestLog.setIpAddress(getClientIPAddress(request));
     }
 
     private String serializeResult(Object result) {
@@ -87,31 +90,33 @@ public class ApplicationLoggingAspect {
             return 403;
         } else if (e instanceof AuthenticationException) {
             return 401;
+        } else if (e instanceof MethodArgumentNotValidException) {
+            return 400;
         }
         return 500;
     }
 
-    private String getClientIPAddress(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader("X-Forwarded-For"))
-                .or(() -> Optional.ofNullable(request.getHeader("Proxy-Client-IP")))
-                .or(() -> Optional.ofNullable(request.getHeader("WL-Proxy-Client-IP")))
-                .or(() -> Optional.ofNullable(request.getHeader("HTTP_CLIENT_IP")))
-                .or(() -> Optional.ofNullable(request.getHeader("HTTP_X_FORWARDED_FOR")))
-                .or(() -> Optional.ofNullable(request.getHeader("X-Real-IP")))
-                .or(() -> Optional.ofNullable(request.getRemoteAddr()))
-                .map(ip -> ip.split(",")[0].trim())
-                .map(this::resolveLocalAddress)
-                .orElse("Unknown");
-    }
+    public String getIPAddress(HttpServletRequest request) {
+        String IPAddress = request.getHeader("X-Forwarded-For");
+        if (IPAddress == null || IPAddress.isEmpty() || "unknown".equalsIgnoreCase(IPAddress)) {
+            IPAddress = request.getHeader("X-Real-IP");
+        }
+        if (IPAddress == null || IPAddress.isEmpty() || "unknown".equalsIgnoreCase(IPAddress)) {
+            IPAddress = request.getRemoteAddr();
+        }
 
-    private String resolveLocalAddress(String ipAddress) {
-        if ("127.0.0.1".equals(ipAddress) || "localhost".equalsIgnoreCase(ipAddress)) {
+        if (IPAddress != null && IPAddress.contains(",")) {
+            IPAddress = IPAddress.split(",")[0].trim();
+        }
+
+        if ("127.0.0.1".equals(IPAddress) || "localhost".equalsIgnoreCase(IPAddress)) {
             try {
-                return InetAddress.getLocalHost().getHostAddress();
+                InetAddress localHost = InetAddress.getLocalHost();
+                IPAddress = localHost.getHostAddress();
             } catch (UnknownHostException e) {
-                log.debug("Failed to resolve localhost address", e);
+                IPAddress = "Unknown";
             }
         }
-        return ipAddress;
+        return IPAddress;
     }
 }

@@ -2,21 +2,22 @@ package com.task.managerapi.controllers;
 
 import com.task.managerapi.dto.requests.LoginRequest;
 import com.task.managerapi.services.KeycloakService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/keycloak")
+@RequestMapping("/api/v1/keycloak")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class KeycloakController {
 
     private final KeycloakService keycloakService;
 
-    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8", consumes = MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8")
-    public ResponseEntity<?> keycloakLogin(@RequestBody LoginRequest loginRequest) {
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8")
+    public ResponseEntity<?> keycloakLogin(@Valid @RequestBody LoginRequest loginRequest) {
         return new ResponseEntity<>(keycloakService.login(loginRequest), HttpStatus.OK);
     }
 

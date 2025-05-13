@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PagedResponse<T> {
     private List<T> pageContent;
     private int pageNo;
