@@ -1,7 +1,7 @@
 package com.task.managerapi.dto.responses;
 
 public record UserResponse(
-        String ownerId,
+        String userId,
         String username,
         String email
 ) {

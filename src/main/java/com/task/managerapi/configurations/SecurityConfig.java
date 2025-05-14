@@ -1,4 +1,4 @@
-package com.task.managerapi.config;
+package com.task.managerapi.configurations;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

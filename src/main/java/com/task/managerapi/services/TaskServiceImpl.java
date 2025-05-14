@@ -9,6 +9,7 @@ import com.task.managerapi.mappers.TaskMapper;
 import com.task.managerapi.models.Task;
 import com.task.managerapi.repositories.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
@@ -31,7 +33,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public void createTask(TaskRequest taskRequest) {
-        taskRepository.save(taskMapper.mapToTask(taskRequest));
+        Task task = taskRepository.save(taskMapper.mapToTask(taskRequest));
+        log.info("Task {} created successfully: ", task.getId());
     }
 
     @Override
@@ -67,15 +70,17 @@ public class TaskServiceImpl implements TaskService {
         task.setDescription(taskRequest.description());
         task.setStatus(taskRequest.status());
         task.setDueDate(taskRequest.dueDate());
+        log.info("Task {} updated successfully: ", id);
     }
 
     @Override
     @Transactional
     public void deleteTaskById(long id) {
         taskRepository.deleteById(getTaskById(id).taskId());
+        log.info("Task {} deleted successfully: ", id);
     }
 
     private String getOwnerId() {
-        return securityLayerService.getUserFromToken().ownerId();
+        return securityLayerService.getUserFromToken().userId();
     }
 }

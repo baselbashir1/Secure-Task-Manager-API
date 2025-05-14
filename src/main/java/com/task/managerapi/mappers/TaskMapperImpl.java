@@ -21,7 +21,7 @@ public class TaskMapperImpl implements TaskMapper {
                 taskRequest.description(),
                 TaskStatus.PENDING,
                 taskRequest.dueDate(),
-                securityLayerService.getUserFromToken().ownerId()
+                securityLayerService.getUserFromToken().userId()
         );
     }
 

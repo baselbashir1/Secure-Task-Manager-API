@@ -2,6 +2,7 @@ package com.task.managerapi.services;
 
 import com.task.managerapi.dto.requests.LoginRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KeycloakServiceImpl implements KeycloakService {
@@ -50,7 +52,9 @@ public class KeycloakServiceImpl implements KeycloakService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(requestBody, headers);
-        return restTemplate.postForEntity(adminTokenUrl, entity, String.class).getBody();
+        String response = restTemplate.postForEntity(adminTokenUrl, entity, String.class).getBody();
+        log.info("User {} logged in successfully in keycloak: ", loginRequest.username());
+        return response;
     }
 
     @Override
@@ -67,6 +71,7 @@ public class KeycloakServiceImpl implements KeycloakService {
         user.setCredentials(Collections.singletonList(credential));
 
         keycloak.realm(realm).users().create(user);
+        log.info("User {} created successfully on keycloak", username);
     }
 
     @Override
@@ -74,6 +79,7 @@ public class KeycloakServiceImpl implements KeycloakService {
         RoleRepresentation role = new RoleRepresentation();
         role.setName(roleName);
         keycloak.realm(realm).roles().create(role);
+        log.info("Role {} created successfully on keycloak", roleName);
     }
 
     @Override
@@ -82,6 +88,7 @@ public class KeycloakServiceImpl implements KeycloakService {
         String userId = users.get(0).getId();
         RoleRepresentation role = keycloak.realm(realm).roles().get(roleName).toRepresentation();
         keycloak.realm(realm).users().get(userId).roles().realmLevel().add(Collections.singletonList(role));
+        log.info("Role {} assigned successfully to user {} on keycloak", roleName, username);
     }
 
     @Override
