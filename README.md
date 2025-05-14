@@ -1,3 +1,5 @@
+# Please find the 'images' folder, which contains screenshots of the testing APIs.
+
 # Secure Task Manager API 🔒
 
 ![Java](https://img.shields.io/badge/Java-17-blue)
