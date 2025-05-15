@@ -123,3 +123,35 @@ role-based access control. Built with Docker for seamless deployment.
     - `@PreAuthorize` Annotations: Provide a clear API contract for coarse-grained access control.
     - `SecurityLayerService`: Enables complex conditional logic for fine-grained business rules.
     - Combines the benefits of declarative (annotations) and imperative (service-layer) security.
+
+---
+
+## 🧪 Unit Testing
+
+The repository includes comprehensive unit tests for the Task entity's CRUD operations using Spring Boot's `DataJpaTest`.
+
+### Key Test Components
+- **Test Framework**: JUnit 5 + Spring Boot Test
+- **Test Focus**: Repository layer validation with H2 in-memory database
+- **Assertions**: AssertJ for fluent assertions
+- **Execution Order**: Explicit test ordering via `@Order` annotations
+- **Transaction Handling**: Automatic rollback except for `@Rollback(false)` marked tests
+
+### Test Coverage
+| Test Method       | Description                                                                 |
+|-------------------|-----------------------------------------------------------------------------|
+| `saveTask()`      | Verifies task creation and auto-generated ID assignment                     |
+| `getTask()`       | Validates single-task retrieval by ID                                       |
+| `getAllTasks()`   | Ensures correct listing of all persisted tasks                              |
+| `updateTask()`    | Tests field updates (e.g., title modification)                              |
+| `deleteTask()`    | Confirms task deletion and post-deletion absence                            |
+
+### Example Test Flow
+1. **Create Task**: Persists a test task with owner ID "basel"
+2. **Read Operations**: Validates retrieval via find-by-ID and find-all methods
+3. **Update Task**: Modifies task title and confirms persistence
+4. **Delete Task**: Removes entity and verifies cleanup
+
+Tests can be executed via Maven:
+```bash
+mvn test
